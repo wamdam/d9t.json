@@ -53,20 +53,24 @@ class JsParse(object):
 
     def parse_number(self, index=0):
         _str = []
+        op = 1
+        if self.res[index] == '-':
+            op = -1
+            index += 1
         for i in xrange(index, len(self.res)):
             if self.res[i]=="." or self.res[i].isdigit():
                 _str.append(self.res[i])
             else:
                 value = "".join(_str)
                 if "." in value:
-                    return (i, float(value), FLOAT)
-                return (i, int(value), INT)
+                    return (i, op*float(value), FLOAT)
+                return (i, op*int(value), INT)
 
         # finally, if the number is the end of self.res
         value = "".join(_str)
         if "." in value:
-            return (len(self.res), float(value), FLOAT)
-        return (len(self.res), int(value), INT)
+            return (len(self.res), op*float(value), FLOAT)
+        return (len(self.res), op*int(value), INT)
 
     def parse_keyword(self, index=0):
         match = re.match('[a-zA-Z0-9_]+', self.res[index:])
@@ -108,7 +112,7 @@ class JsParse(object):
         c = self.res[index]
         if c in self._string_start:
             return self.parse_string(index)
-        if c.isdigit():
+        if c.isdigit() or c=='-' or c=='.': # 33, -2, .44, -.13
             return self.parse_number(index)
         if c == self._list_start:
             return (index+1, "[", CONTROL)
